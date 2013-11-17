@@ -3,7 +3,7 @@ BitTalker
 
 Raspberry PI talking bitcoin ticker
 
-This app uses festival, and polls the current Bitstamp price (once, every 61s, to ensure it does not exceed their 600/10m polling rule), as well as computing the BTC value stored in a bitcoin-qt wallet which is running on a separate computer on the network. Notably, I didn't want it jabbering away every time the price changed. As such, it is designed to only speak based upon a user designed variance.
+This app uses festival, and polls the current Bitstamp price (once, every 61s, to ensure it does not exceed their 600/10m polling rule), as well as computing the BTC value stored in a bitcoin-qt wallet which is running on a separate computer on the network. Notably, I didn't want it jabbering away every time the price changed. As such, it is designed to only speak based upon a user designated variance.
 
 For example, only talk when the price has changed, up or down, by $5.00.
 
