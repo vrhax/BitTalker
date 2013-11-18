@@ -1,42 +1,13 @@
 # -----------------------------------------------------------------------------
 # Created by vrhax on November 16, 2013
 # -----------------------------------------------------------------------------
-# USAGE: python bittalker.py variance debug
-#
-# example: python bittalker.py 5.0 True
-#
+# USAGE: python bittalker.py
 #
 # -----------------------------------------------------------------------------
-# client info
-# be sure to add/update the following lines in your bitcoin.conf file
-#
-# server=1
-# daemon=1
-# rpcuser=RPCUSER           <= remote procedure call username
-# rpcpassword=RPCPASSWORD   <= remote procedure call password
-# rpcallowip=127.0.0.1      <= localhost
-# rpcallowip=RPIHOST        <= raspberry pi ip address
-# rpcport=RCPPORT           <= usually 8332
+# import system libraries
 # -----------------------------------------------------------------------------
 
-btcuser = 'RPCUSER';
-btcpass = 'RPCPASSWORD';
-btchost = 'RPCHOST';
-btcport = RPCPORT;
-
-# -----------------------------------------------------------------------------
-# exchange info
-# -----------------------------------------------------------------------------
-
-exname  = "BitStamp";
-exurl   = "https://www.bitstamp.net/api/ticker/";
-
-# -----------------------------------------------------------------------------
-# imports time library (for while loop sleep)
-# -----------------------------------------------------------------------------
-
-import sys
-import time
+import ConfigParser, os, sys, time
 
 # -----------------------------------------------------------------------------
 # bitcoin wallet connection library
@@ -63,6 +34,32 @@ import json
 import subprocess
 
 # -----------------------------------------------------------------------------
+# configuration initialization
+# -----------------------------------------------------------------------------
+
+config  = ConfigParser.RawConfigParser();
+config.read('defaults.cfg');
+
+sname   = config.get('Default','sname');
+debug   = config.getboolean('Default','debug');
+lname   = config.get('Default','lname');
+lsize   = config.getint('Default','lsize');
+
+btcuser = config.get('Client','btcuser');
+btcpass = config.get('Client','btcpass');
+btchost = config.get('Client','btchost');
+btcport = config.getint('Client','btcport');
+
+exname  = config.get('Exchange','exname');
+exurl   = config.get('Exchange','exurl');
+pfld    = config.get('Exchange','pfld');
+pvar    = config.getfloat('Exchange','pvar');
+poll    = config.getfloat('Exchange','poll');
+
+lastex  = '0.00';
+lastbal = '0.00';
+
+# -----------------------------------------------------------------------------
 # templates
 # -----------------------------------------------------------------------------
 
@@ -77,28 +74,29 @@ sdeltamsg    = Template(exname+'\'s market price has $mdelta from $oprice cents 
 from time import gmtime, strftime
 
 # -----------------------------------------------------------------------------
-# macros to make code cleaner
+# logging macro. limit filesize to 1MB
 # -----------------------------------------------------------------------------
 
 def log(phrase):
-    old_stdout  = sys.stdout;
-    log_file    = open("bittalk.log","a");
-    sys.stdout  = log_file;
+    old_stdout      = sys.stdout;
+    if(os.path.getsize(lname) >= lsize):
+        say('Max filesize reached. Creating new file.');
+        log_file    = open(lname,"w");
+        sys.stdout  = log_file;
+        print '# ----------------------------------------------------------------------------- #';
+    else:
+        log_file    = open(lname,"a");
+        sys.stdout  = log_file;
     print phrase;
     sys.stdout = old_stdout;
     log_file.close();
 
-def newlog():
-    old_stdout  = sys.stdout;
-    log_file    = open("bittalk.log","w");
-    sys.stdout  = log_file;
-    sys.stdout = old_stdout;
-    log_file.close();
-    say(sname+' started. Hello!');
-    log('# ----------------------------------------------------------------------------- #');
+# -----------------------------------------------------------------------------
+# macros to make code cleaner
+# -----------------------------------------------------------------------------
 
 def say(phrase):
-    subprocess.call('echo "'+phrase+'" | festival --tts', shell=True);
+    subprocess.call('echo "'+phrase.replace('00 cents','00')+'" | festival --tts', shell=True);
 
 def talk(delta,price,btcbal):
 
@@ -120,31 +118,12 @@ def talk(delta,price,btcbal):
 # main
 # -----------------------------------------------------------------------------
 
-total   = len(sys.argv);
-cmdargs = str(sys.argv);
-
-sname   = 'Bit Talker';
-
-if(total == 3):
-    exvar   = str(sys.argv[1]);
-    debug   = str(sys.argv[2]);
-elif(total == 2):
-    exvar   = str(sys.argv[1]);
-    debug   = True;
-else:
-    exvar   = '1.0';
-    debug   = True;
+say('Hello!');
+say(sname+' started.');
 
 # -----------------------------------------------------------------------------
 # polling loop
 # -----------------------------------------------------------------------------
-
-global lastex, lastbal;
-
-lastex  = '0.0';
-lastbal = '0.0';
-
-newlog();
 
 while True:
 
@@ -154,7 +133,7 @@ while True:
 
     jsonurl = urllib2.urlopen(exurl);
     data = json.loads(jsonurl.read());
-    btcprice =  data['last'];
+    btcprice =  data[pfld];
 
     try:
         conn = bitcoinrpc.connect_to_remote(btcuser, btcpass, host=btchost, port=btcport)
@@ -171,10 +150,10 @@ while True:
     if (client and (btcbalance != lastbal)) :
         talk('',btcprice,btcbalance);
         lastbal = btcbalance;
-    elif (float(btcprice) >= float(lastex) + float(exvar)) :
+    elif (float(btcprice) >= float(lastex) + float(pvar)) :
         talk('increased',btcprice,btcbalance);
         lastex  = btcprice;
-    elif (float(btcprice) <= float(lastex) - float(exvar)) :
+    elif (float(btcprice) <= float(lastex) - float(pvar)) :
         talk('decreased',btcprice,btcbalance);
         lastex  = btcprice;
 
@@ -182,7 +161,15 @@ while True:
 # poll once every 5 minutes
 # -----------------------------------------------------------------------------
 
-    time.sleep(61);
+    time.sleep(poll);
+
+# -----------------------------------------------------------------------------
+# site down or slow response. check again in 30 seconds
+# -----------------------------------------------------------------------------
+
+  except (urllib2.URLError):
+    time.sleep(30);
+    continue;
 
 # -----------------------------------------------------------------------------
 # ctrl-c halts script
