@@ -24,8 +24,7 @@ import bitcoinrpc
 # json api call library (exchange api)
 # -----------------------------------------------------------------------------
 
-import urllib2
-import json
+import urllib2, httplib, json
 
 # -----------------------------------------------------------------------------
 # for festival tts
@@ -178,7 +177,7 @@ while True:
 # site down or slow response. check again in 30 seconds
 # -----------------------------------------------------------------------------
 
-  except (urllib2.URLError):
+  except (httplib.BadStatusLine):
     time.sleep(30);
     continue;
 
