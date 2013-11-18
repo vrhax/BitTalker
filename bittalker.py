@@ -61,9 +61,9 @@ config  = ConfigParser.RawConfigParser();
 config.read('defaults.cfg');
 
 sname   = config.get('Default','sname');
-debug   = config.getboolean('Default','debug');
 lname   = config.get('Default','lname');
 lsize   = config.getint('Default','lsize');
+debug   = config.getboolean('Default','debug');
 
 btcuser = config.get('Client','btcuser');
 btcpass = config.get('Client','btcpass');
@@ -71,8 +71,8 @@ btchost = config.get('Client','btchost');
 btcport = config.getint('Client','btcport');
 
 exname  = config.get('Exchange','exname');
-exurl   = config.get('Exchange','exurl');
-pfld    = config.get('Exchange','pfld');
+exurl   = config.get(exname,'exurl');
+pfld    = config.get(exname,'pfld');
 pvar    = config.getfloat('Exchange','pvar');
 poll    = config.getfloat('Exchange','poll');
 
@@ -198,7 +198,8 @@ while True:
 # site down or slow response. check again in 30 seconds
 # -----------------------------------------------------------------------------
 
-  except (httplib.BadStatusLine):
+  except (urllib2.HTTPError):
+    say(exname+' unaccessible. Rechecking in 30 seconds');
     time.sleep(30);
     continue;
 
