@@ -65,7 +65,8 @@ lastbal = '0.00';
 
 from string import Template;
 
-plog         = Template('$pnow: Old: $oprice New: $nprice BTC: $btc Value: $bval');
+plog1        = Template('$pnow: Old: $oprice New: $nprice BTC: $btc Value: $bval');
+plog2        = Template('$pnow: Old: $oprice New: $nprice');
 
 sbitmsg      = Template('You have $btc bitcoins, which are worth $bval cents');
 smktmsg      = Template(exname+'\'s market price is $nprice cents');
@@ -105,6 +106,8 @@ def say(phrase):
 
 def talk(delta,price,btcbal):
 
+    global client;
+
     now = strftime("%Y-%m-%d %H:%M:%S", time.localtime());
 
     if(delta != ''):
@@ -115,9 +118,9 @@ def talk(delta,price,btcbal):
     if(client):
         btcval  = str("%.2f" % round((float(price) * float(btcbal)),2));
         say(sbitmsg.substitute(btc=btcbal,bval='\$'+btcval));
-        if(debug):log(plog.substitute(pnow=now,oprice='$'+lastex,nprice='$'+price,btc=btcbal,bval='$'+btcval));
+        if(debug):log(plog1.substitute(pnow=now,oprice='$'+lastex,nprice='$'+price,btc=btcbal,bval='$'+btcval));
     else:
-        if(debug):log(plog.substitute(pnow=now,oprice='$'+lastex,nprice='$'+price));
+        if(debug):log(plog2.substitute(pnow=now,oprice='$'+lastex,nprice='$'+price));
 
 # -----------------------------------------------------------------------------
 # main
@@ -146,7 +149,9 @@ while True:
         btcbalance = str(conn.getbalance());
         client = True;
     except (Exception):
-        alert('No bitcoin client found.');
+        btcbalance = '0.00';
+        say('No bitcoin client found.');
+        say('Continuing.');
         client = False;
 
 # -----------------------------------------------------------------------------
@@ -189,3 +194,4 @@ while True:
 # -----------------------------------------------------------------------------
 
 say(sname+' halted. Good-bye!');
+exit(0);
