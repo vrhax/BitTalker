@@ -79,14 +79,19 @@ from time import gmtime, strftime
 
 def log(phrase):
     old_stdout      = sys.stdout;
-    if(os.path.getsize(lname) >= lsize):
-        say('Max filesize reached. Creating new file.');
+    if(os.path.isfile(lname)):
+        if(os.path.getsize(lname) >= lsize):
+            say('Max filesize reached. Creating new file.');
+            log_file    = open(lname,"w");
+            sys.stdout  = log_file;
+            print '# ----------------------------------------------------------------------------- #';
+        else:
+            log_file    = open(lname,"a");
+            sys.stdout  = log_file;
+    else:
         log_file    = open(lname,"w");
         sys.stdout  = log_file;
         print '# ----------------------------------------------------------------------------- #';
-    else:
-        log_file    = open(lname,"a");
-        sys.stdout  = log_file;
     print phrase;
     sys.stdout = old_stdout;
     log_file.close();
