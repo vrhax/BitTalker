@@ -1,5 +1,10 @@
 # -----------------------------------------------------------------------------
-# Created by vrhax on November 16, 2013
+# This code is written by VRHax.
+# It is in the public domain, so you can do what you like with it
+# but a link to https://github.com/vrhax/BitTalker would be nice.
+#
+# It works on the Raspberry Pi computer with the standard Debian Wheezy OS and
+# the festival tts module
 # -----------------------------------------------------------------------------
 #
 # USAGE: python bittalker.py
