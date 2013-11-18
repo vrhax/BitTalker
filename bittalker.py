@@ -1,6 +1,7 @@
 # -----------------------------------------------------------------------------
 # Created by vrhax on November 16, 2013
 # -----------------------------------------------------------------------------
+#
 # USAGE: python bittalker.py
 #
 # -----------------------------------------------------------------------------
@@ -10,24 +11,44 @@
 import ConfigParser, os, sys, time
 
 # -----------------------------------------------------------------------------
-# bitcoin wallet connection library
-# must install bitcoin-python first (as follows)
-#
-# sudo apt-get install python-setuptools
-# sudo easy_install pip
-# sudo pip install bitcoin-python
-# -----------------------------------------------------------------------------
-
-import bitcoinrpc
-
-# -----------------------------------------------------------------------------
-# json api call library (exchange api)
+# import json api call library (exchange api)
 # -----------------------------------------------------------------------------
 
 import urllib2, httplib, json
 
 # -----------------------------------------------------------------------------
-# for festival tts
+# import bitcoin wallet connection library
+#
+#   NB: must first install bitcoin-python (as follows):
+#
+#       sudo apt-get install python-setuptools
+#       sudo easy_install pip
+#       sudo pip install bitcoin-python
+# -----------------------------------------------------------------------------
+
+import bitcoinrpc
+
+# -----------------------------------------------------------------------------
+# import subprocess library for calling festival tts
+#
+#   NB: must first install festival tts (as follows):
+#
+#       sudo apt-get update
+#       sudo apt-get upgrade
+#       sudo apt-get install alsa-utils
+#
+#       sudo nano /etc/modules
+#
+#         change snd-bcm2835 to snd_bcm2835
+#
+#       sudo apt-get install mplayer
+#
+#       sudo nano /etc/mplayer/mplayer.conf
+#
+#         add nolirc=yes
+#
+#       sudo apt-get install festival
+#
 # -----------------------------------------------------------------------------
 
 import subprocess
@@ -55,8 +76,8 @@ pfld    = config.get('Exchange','pfld');
 pvar    = config.getfloat('Exchange','pvar');
 poll    = config.getfloat('Exchange','poll');
 
-lastex  = '0.00';
-lastbal = '0.00';
+lastex  = '000.00';
+lastbal = '000.00';
 
 # -----------------------------------------------------------------------------
 # templates
@@ -74,7 +95,7 @@ sdeltamsg    = Template(exname+'\'s market price has $mdelta from $oprice cents 
 from time import gmtime, strftime
 
 # -----------------------------------------------------------------------------
-# logging macro. limit filesize to 1MB
+# logging macro.
 # -----------------------------------------------------------------------------
 
 def log(phrase):
@@ -97,7 +118,7 @@ def log(phrase):
     log_file.close();
 
 # -----------------------------------------------------------------------------
-# macros to make code cleaner
+# speech macros
 # -----------------------------------------------------------------------------
 
 def say(phrase):
@@ -148,7 +169,7 @@ while True:
         btcbalance = str(conn.getbalance());
         client = True;
     except (Exception):
-        btcbalance = '0.00';
+        btcbalance = '0.0';
         say('No bitcoin client found.');
         say('Continuing.');
         client = False;
@@ -168,7 +189,7 @@ while True:
         lastex  = btcprice;
 
 # -----------------------------------------------------------------------------
-# poll once every 5 minutes
+# poll once every n seconds
 # -----------------------------------------------------------------------------
 
     time.sleep(poll);
@@ -189,7 +210,7 @@ while True:
     break;
 
 # -----------------------------------------------------------------------------
-# The End
+# The End. Clean exit.
 # -----------------------------------------------------------------------------
 
 say(sname+' halted. Good-bye!');
