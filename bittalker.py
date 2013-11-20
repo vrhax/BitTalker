@@ -165,19 +165,42 @@ while True:
 
   try:
 
-    jsonurl = urllib2.urlopen(exurl);
-    data = json.loads(jsonurl.read());
-    btcprice =  data[pfld];
+# -----------------------------------------------------------------------------
+# get bitcoin client data
+# -----------------------------------------------------------------------------
 
     try:
         conn = bitcoinrpc.connect_to_remote(btcuser, btcpass, host=btchost, port=btcport)
         btcbalance = str(conn.getbalance());
         client = True;
+
+# -----------------------------------------------------------------------------
+# no client running
+# -----------------------------------------------------------------------------
+
     except (Exception):
         btcbalance = '0.0';
         say('No bitcoin client found.');
         say('Continuing.');
         client = False;
+
+# -----------------------------------------------------------------------------
+# get market data
+# -----------------------------------------------------------------------------
+
+    try:
+        jsonurl = urllib2.urlopen(exurl);
+        data = json.loads(jsonurl.read());
+        btcprice =  data[pfld];
+
+# -----------------------------------------------------------------------------
+# site down or slow response. check again in 30 seconds
+# -----------------------------------------------------------------------------
+
+    except (urllib2.HTTPError):
+        say(exname+' unaccessible. Rechecking in 1 minute');
+        time.sleep(60);
+        continue;
 
 # -----------------------------------------------------------------------------
 # check reporting status (little/no change, stay silent)
@@ -198,15 +221,6 @@ while True:
 # -----------------------------------------------------------------------------
 
     time.sleep(poll);
-
-# -----------------------------------------------------------------------------
-# site down or slow response. check again in 30 seconds
-# -----------------------------------------------------------------------------
-
-  except (urllib2.HTTPError):
-    say(exname+' unaccessible. Rechecking in 30 seconds');
-    time.sleep(30);
-    continue;
 
 # -----------------------------------------------------------------------------
 # ctrl-c halts script
