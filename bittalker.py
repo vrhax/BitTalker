@@ -68,6 +68,7 @@ config.read('defaults.cfg');
 sname   = config.get('Default','sname');
 lname   = config.get('Default','lname');
 lsize   = config.getint('Default','lsize');
+httpe   = config.getfloat('Default','httpe');
 debug   = config.getboolean('Default','debug');
 
 btcuser = config.get('Client','btcuser');
@@ -197,9 +198,9 @@ while True:
 # site down or slow response. check again in 30 seconds
 # -----------------------------------------------------------------------------
 
-    except (urllib2.HTTPError):
-        say(exname+' unaccessible. Rechecking in 1 minute');
-        time.sleep(60);
+    except (urllib2.HTTPError,BadStatusLine):
+        say(exname+' unaccessible. Rechecking in '+str(httpe/60.0)+' minutes');
+        time.sleep(httpe);
         continue;
 
 # -----------------------------------------------------------------------------
