@@ -76,6 +76,11 @@ btcpass = config.get('Client','btcpass');
 btchost = config.get('Client','btchost');
 btcport = config.getint('Client','btcport');
 
+if config.has_option('ColdStorage', 'btc'):
+	btccold = config.getfloat('ColdStorage', 'btc');
+else:
+	btccold = 0.0;
+
 exname  = config.get('Exchange','exname');
 exurl   = config.get(exname,'exurl');
 pfld    = config.get(exname,'pfld');
@@ -91,10 +96,10 @@ lastbal = '000.00';
 
 from string import Template;
 
-plog1        = Template('$pnow: Old: $oprice New: $nprice BTC: $btc Value: $bval');
+plog1        = Template('$pnow: Old: $oprice New: $nprice BTC: $btc BTC Cold: $btcc Total: $ttl Value: $bval');
 plog2        = Template('$pnow: Old: $oprice New: $nprice');
 
-sbitmsg      = Template('You have $btc bitcoins, which are worth $bval cents');
+sbitmsg      = Template('You have $ttl bitcoins, which are worth $bval cents');
 smktmsg      = Template(exname+'\'s market price is $nprice cents');
 sdeltamsg    = Template(exname+'\'s market price has $mdelta from $oprice cents to $nprice cents');
 
@@ -142,9 +147,10 @@ def talk(delta,price,btcbal):
         say(smktmsg.substitute(nprice='\$'+price));
 
     if(client):
-        btcval  = str("%.2f" % round((float(price) * float(btcbal)),2));
-        say(sbitmsg.substitute(btc=btcbal,bval='\$'+btcval));
-        if(debug):log(plog1.substitute(pnow=now,oprice='$'+lastex,nprice='$'+price,btc=btcbal,bval='$'+btcval));
+    	btcttl  = (float(btcbal)+float(btccold));
+        btcval  = str("%.2f" % round((float(price) * float(btcttl)),2));
+        say(sbitmsg.substitute(ttl=btcttl,bval='\$'+btcval));
+        if(debug):log(plog1.substitute(pnow=now,oprice='$'+lastex,nprice='$'+price,btc=btcbal,btcc=btccold,ttl=btcttl,bval='$'+btcval));
     else:
         if(debug):log(plog2.substitute(pnow=now,oprice='$'+lastex,nprice='$'+price));
 
