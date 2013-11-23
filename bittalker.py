@@ -42,10 +42,6 @@ import bitcoinrpc
 #       sudo apt-get upgrade
 #       sudo apt-get install alsa-utils
 #
-#       sudo nano /etc/modules
-#
-#         change snd-bcm2835 to snd_bcm2835
-#
 #       sudo apt-get install mplayer
 #
 #       sudo nano /etc/mplayer/mplayer.conf
